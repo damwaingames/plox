@@ -9,6 +9,11 @@ class Stmt(ABC):
     pass
 
 
+class Block(Stmt):
+    def __init__(self, statements: list[Stmt]) -> None:
+        self._statements = statements
+
+
 class Expression(Stmt):
     def __init__(self, expression: Expr) -> None:
         self._expression = expression

@@ -9,6 +9,7 @@ from abstract_syntax_tree import (
     Unary,
     Variable,
     Stmt,
+    Block,
     Expression,
     Print,
     Var,
@@ -174,9 +175,20 @@ class Parser:
         self._consume(TokenType.SEMICOLON, "Expect ';' after expression.")
         return Expression(expression)
 
+    def _block(self) -> list[Stmt]:
+        statements: list[Stmt] = []
+        while not self._check(TokenType.RIGHT_BRACE) and not self._is_at_end():
+            x = self._declaration()
+            if x:
+                statements.append(x)
+        self._consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
+
     def _statement(self) -> Stmt:
         if self._match(TokenType.PRINT):
             return self._print_statment()
+        if self._match(TokenType.LEFT_BRACE):
+            return Block(self._block())
         return self._expression_statement()
 
     def _declaration(self) -> Stmt | None:

@@ -1,13 +1,15 @@
 from typing import Any
 
 from .expressions import Expr, Assign, Binary, Grouping, Literal, Unary, Variable
-from .statements import Stmt, Expression, Print, Var
+from .statements import Stmt, Block, Expression, Print, Var
 from scanner.token import Token
 
 
 class ASTPrinter:
     def print_stmt(self, statement: Stmt) -> str:
         match statement:
+            case Block():
+                return self._parenthesize2("block", *statement._statements)
             case Expression():
                 return self._parenthesize(";", statement._expression)
             case Print():
@@ -118,6 +120,8 @@ class ASTPrinter:
                     output += self._parenthesize(part._operator.lexeme, part._right)
                 case Variable():
                     output += part._name.lexeme
+                case Block():
+                    output += self._parenthesize2("block", *part._statements)
                 case Expression():
                     output += self._parenthesize(";", part._expression)
                 case Print():

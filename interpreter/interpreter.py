@@ -10,6 +10,7 @@ from abstract_syntax_tree import (
     Unary,
     Variable,
     Stmt,
+    Block,
     Expression,
     Print,
     Var,
@@ -32,6 +33,11 @@ class Interpreter:
 
     def _execute(self, statement: Stmt) -> Any:
         match statement:
+            case Block():
+                self._execute_block(
+                    statement._statements, Environment(self._environment)
+                )
+                return None
             case Expression():
                 self._evaluate(statement._expression)
                 return None
@@ -44,6 +50,15 @@ class Interpreter:
                     value = self._evaluate(statement._initializer)
                 self._environment.define(statement._name.lexeme, value)
                 return None
+
+    def _execute_block(self, statements: list[Stmt], environment: Environment) -> None:
+        previous = self._environment
+        try:
+            self._environment = environment
+            for statment in statements:
+                self._execute(statment)
+        finally:
+            self._environment = previous
 
     def _evaluate(self, expression: Expr) -> Any:
         match expression:
