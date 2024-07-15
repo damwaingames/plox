@@ -1,7 +1,8 @@
 import sys
 
-from abstract_syntax_tree import ASTPrinter
-from errors import ErrorHandler
+from abstract_syntax_tree import ASTPrinter, Expr
+from errors import ErrorHandler, LoxParseError
+from interpreter import Interpreter
 from parser import Parser
 from scanner import Scanner
 from scanner.token import Token
@@ -14,13 +15,14 @@ def tokenize(filename: str) -> list[Token]:
     return tokens
 
 
-def parse(tokens: list[Token]) -> None:
+def parse(tokens: list[Token]) -> Expr:
     parser = Parser(tokens)
     expression = parser.parse()
     if ErrorHandler.had_error:
-        return
+        raise LoxParseError()
     if expression:
-        print(ASTPrinter().print(expression))
+        return expression
+    raise LoxParseError()
 
 
 def main():
@@ -36,13 +38,23 @@ def main():
             for token in tokenize(filename):
                 print(token)
         case "parse":
-            parse(tokenize(filename))
+            try:
+                expression = parse(tokenize(filename))
+                print(ASTPrinter().print(expression))
+            except LoxParseError:
+                pass
+        case "interpret":
+            interpreter = Interpreter()
+            interpreter.interpret(parse(tokenize(filename)))
+
         case _:
             print(f"Unknown command: {command}", file=sys.stderr)
             exit(1)
 
     if ErrorHandler.had_error:
         exit(65)
+    if ErrorHandler.had_runtime_error:
+        exit(70)
 
 
 if __name__ == "__main__":

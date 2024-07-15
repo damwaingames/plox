@@ -1,10 +1,6 @@
-from errors import ErrorHandler
+from errors import ErrorHandler, LoxParseError
 from scanner.token import Token, TokenType
 from abstract_syntax_tree import Expr, Binary, Grouping, Literal, Unary
-
-
-class ParseError(Exception):
-    pass
 
 
 class Parser:
@@ -15,7 +11,7 @@ class Parser:
     def parse(self) -> Expr | None:
         try:
             return self._expression()
-        except ParseError:
+        except LoxParseError:
             return None
 
     def _peek(self) -> Token:
@@ -44,9 +40,9 @@ class Parser:
                 return True
         return False
 
-    def _error(self, token: Token, message: str) -> ParseError:
+    def _error(self, token: Token, message: str) -> LoxParseError:
         ErrorHandler.error(token, message)
-        return ParseError()
+        return LoxParseError()
 
     def _consume(self, t_type: TokenType, message: str) -> Token:
         if self._check(t_type):
