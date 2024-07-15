@@ -123,7 +123,7 @@ class Interpreter:
             # This is needed for the IEEE 754 non compliance of Lox
             if isnan(a) and isnan(b):
                 return True
-        return a == b if type(a) == type(b) else False
+        return a == b if type(a) is type(b) else False
 
     def _check_number_operand(self, operator: Token, operand: Any) -> None:
         if isinstance(operand, float):
