@@ -4,7 +4,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
 ## Current state
 - Line comments implemented (`// comment`)
 - Expressions implemented
-  - [ ] Assignment (`IDENTIFIER = Expr`)
+  - [x] Assignment (`IDENTIFIER = Expr`)
   - [x] Binary
     - [x] Addition or Concatenation (`Expr + Expr`)
     - [x] Subtraction (`Expr - Expr`)
@@ -30,7 +30,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [x] Unary
     - [x] Negation (`-Expr`)
     - [x] Logical Inverse (`!Expr`)
-  - [ ] Variable (`IDENTIFIER`)
+  - [x] Variable (`IDENTIFIER`)
 - Statements implemented
   - [ ] Block (`{Stmt}`)
   - [ ] Class (`class IDENTIFIER {Stmt}`)
@@ -39,7 +39,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [ ] If (`if (Expr) {Stmt} else {Stmt}`)
   - [x] Print (`print Expr;`)
   - [ ] Return (`return Expr;`)
-  - [ ] Var (`var IDENTIFIER;`)
+  - [x] Var (`var IDENTIFIER;`)
   - [ ] While (`while (Expr) {Stmt}`)
 
 

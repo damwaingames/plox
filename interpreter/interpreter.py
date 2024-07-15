@@ -3,19 +3,26 @@ from typing import Any
 
 from abstract_syntax_tree import (
     Expr,
+    Assign,
     Binary,
     Grouping,
     Literal,
     Unary,
+    Variable,
     Stmt,
     Expression,
     Print,
+    Var,
 )
+from environment import Environment
 from errors import ErrorHandler, LoxRuntimeError
 from scanner.token import Token, TokenType
 
 
 class Interpreter:
+    def __init__(self) -> None:
+        self._environment = Environment()
+
     def interpret(self, statements: list[Stmt]) -> None:
         try:
             for statement in statements:
@@ -32,9 +39,18 @@ class Interpreter:
                 value = self._evaluate(statement._expression)
                 print(self._stringify(value))
                 return None
+            case Var():
+                if statement._initializer is not None:
+                    value = self._evaluate(statement._initializer)
+                self._environment.define(statement._name.lexeme, value)
+                return None
 
     def _evaluate(self, expression: Expr) -> Any:
         match expression:
+            case Assign():
+                value = self._evaluate(expression._value)
+                self._environment.assign(expression._name, value)
+                return value
             case Binary():
                 left = self._evaluate(expression._left)
                 right = self._evaluate(expression._right)
@@ -88,6 +104,8 @@ class Interpreter:
                     case TokenType.MINUS:
                         self._check_number_operand(expression._operator, right)
                         return -int(right)
+            case Variable():
+                return self._environment.get(expression._name)
             case _:
                 raise NotImplementedError(
                     f"Not added a case for a certain expression : {expression}"

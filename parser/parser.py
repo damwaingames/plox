@@ -2,13 +2,16 @@ from errors import ErrorHandler, LoxParseError
 from scanner.token import Token, TokenType
 from abstract_syntax_tree import (
     Expr,
+    Assign,
     Binary,
     Grouping,
     Literal,
     Unary,
+    Variable,
     Stmt,
     Expression,
     Print,
+    Var,
 )
 
 
@@ -20,7 +23,9 @@ class Parser:
     def parse(self) -> list[Stmt]:
         statements: list[Stmt] = []
         while not self._is_at_end():
-            statements.append(self._statement())
+            x = self._declaration()
+            if x:
+                statements.append(x)
         return statements
 
     def _peek(self) -> Token:
@@ -86,6 +91,8 @@ class Parser:
             return Literal(None)
         if self._match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self._previous().literal)
+        if self._match(TokenType.IDENTIFIER):
+            return Variable(self._previous())
         if self._match(TokenType.LEFT_PAREN):
             expression = self._expression()
             self._consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
@@ -136,13 +143,31 @@ class Parser:
             expression = Binary(expression, operator, right)
         return expression
 
+    def _assignment(self) -> Expr:
+        expression = self._equality()
+        if self._match(TokenType.EQUAL):
+            equals = self._previous()
+            value = self._assignment()
+            if isinstance(expression, Variable):
+                name = expression._name
+                return Assign(name, value)
+            ErrorHandler.error(equals, "Invalid assignment target.")
+        return expression
+
     def _expression(self) -> Expr:
-        return self._equality()
+        return self._assignment()
 
     def _print_statment(self) -> Stmt:
         value = self._expression()
         self._consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Print(value)
+
+    def _var_declaration(self) -> Stmt:
+        name = self._consume(TokenType.IDENTIFIER, "Expect variable name.")
+        if self._match(TokenType.EQUAL):
+            initializer = self._expression()
+        self._consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
+        return Var(name, initializer)
 
     def _expression_statement(self) -> Stmt:
         expression = self._expression()
@@ -153,3 +178,12 @@ class Parser:
         if self._match(TokenType.PRINT):
             return self._print_statment()
         return self._expression_statement()
+
+    def _declaration(self) -> Stmt | None:
+        try:
+            if self._match(TokenType.VAR):
+                return self._var_declaration()
+            return self._statement()
+        except LoxParseError:
+            self._synchronize()
+            return None

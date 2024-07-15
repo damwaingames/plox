@@ -8,6 +8,12 @@ class Expr(ABC):
     pass
 
 
+class Assign(Expr):
+    def __init__(self, name: Token, value: Expr) -> None:
+        self._name = name
+        self._value = value
+
+
 class Binary(Expr):
     def __init__(self, left: Expr, operator: Token, right: Expr) -> None:
         self._left = left
@@ -29,3 +35,8 @@ class Grouping(Expr):
 class Literal(Expr):
     def __init__(self, value: Any) -> None:
         self._value = value
+
+
+class Variable(Expr):
+    def __init__(self, name: Token) -> None:
+        self._name = name
