@@ -67,4 +67,12 @@ class Token:
         self.line = line
 
     def __repr__(self) -> str:
-        return f"{str(self.type).split(".")[-1]} {self.lexeme} {self.literal if self.literal is not None else "null"}"
+        if self.literal is None:
+            value = "null"
+        else:
+            match self.literal:
+                case bool():
+                    value = str(self.literal).lower()
+                case _:
+                    value = str(self.literal)
+        return f"{str(self.type).split(".")[-1]} {self.lexeme} {value}"

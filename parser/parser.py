@@ -74,9 +74,9 @@ class Parser:
 
     def _primary(self) -> Expr:
         if self._match(TokenType.FALSE):
-            return Literal("false")
+            return Literal(False)
         if self._match(TokenType.TRUE):
-            return Literal("true")
+            return Literal(True)
         if self._match(TokenType.NIL):
             return Literal(None)
         if self._match(TokenType.NUMBER, TokenType.STRING):

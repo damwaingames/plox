@@ -11,9 +11,13 @@ class ASTPrinter:
             case Grouping():
                 return self._parenthesize("group", expression._expression)
             case Literal():
-                return (
-                    str(expression._value) if expression._value is not None else "nil"
-                )
+                match expression._value:
+                        case None:
+                           return "nil"
+                        case bool():
+                            return str(expression._value).lower()
+                        case _:
+                            return str(expression._value)
             case Unary():
                 return self._parenthesize(
                     expression._operator.lexeme, expression._right
@@ -35,7 +39,13 @@ class ASTPrinter:
                 case Grouping():
                     output += self._parenthesize("group", expression._expression)
                 case Literal():
-                    output += str(expression._value) if expression._value else "nil"
+                    match expression._value:
+                        case None:
+                            output += "nil"
+                        case bool():
+                            output += str(expression._value).lower()
+                        case _:
+                            output += str(expression._value)
                 case Unary():
                     output += self._parenthesize(
                         expression._operator.lexeme, expression._right
