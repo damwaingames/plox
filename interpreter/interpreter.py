@@ -1,18 +1,37 @@
 from math import isnan
 from typing import Any
 
-from abstract_syntax_tree import Expr, Binary, Grouping, Literal, Unary
+from abstract_syntax_tree import (
+    Expr,
+    Binary,
+    Grouping,
+    Literal,
+    Unary,
+    Stmt,
+    Expression,
+    Print,
+)
 from errors import ErrorHandler, LoxRuntimeError
 from scanner.token import Token, TokenType
 
 
 class Interpreter:
-    def interpret(self, expression: Expr) -> None:
+    def interpret(self, statements: list[Stmt]) -> None:
         try:
-            value = self._evaluate(expression)
-            print(self._stringify(value))
+            for statement in statements:
+                self._execute(statement)
         except LoxRuntimeError as e:
             ErrorHandler.runtime_error(e)
+
+    def _execute(self, statement: Stmt) -> Any:
+        match statement:
+            case Expression():
+                self._evaluate(statement._expression)
+                return None
+            case Print():
+                value = self._evaluate(statement._expression)
+                print(self._stringify(value))
+                return None
 
     def _evaluate(self, expression: Expr) -> Any:
         match expression:

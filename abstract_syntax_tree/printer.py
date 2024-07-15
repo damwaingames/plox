@@ -1,8 +1,20 @@
 from .expressions import Expr, Binary, Unary, Grouping, Literal
+from .statements import Stmt, Expression, Print
 
 
 class ASTPrinter:
-    def print(self, expression: Expr) -> str:
+    def print_stmt(self, statement: Stmt) -> str:
+        match statement:
+            case Expression():
+                return self._parenthesize(";", statement._expression)
+            case Print():
+                return self._parenthesize("print", statement._expression)
+            case _:
+                raise NotImplementedError(
+                    f"Not added a case for a certain statement : {statement}"
+                )
+
+    def print_expr(self, expression: Expr) -> str:
         match expression:
             case Binary():
                 return self._parenthesize(
@@ -12,12 +24,12 @@ class ASTPrinter:
                 return self._parenthesize("group", expression._expression)
             case Literal():
                 match expression._value:
-                        case None:
-                           return "nil"
-                        case bool():
-                            return str(expression._value).lower()
-                        case _:
-                            return str(expression._value)
+                    case None:
+                        return "nil"
+                    case bool():
+                        return str(expression._value).lower()
+                    case _:
+                        return str(expression._value)
             case Unary():
                 return self._parenthesize(
                     expression._operator.lexeme, expression._right
