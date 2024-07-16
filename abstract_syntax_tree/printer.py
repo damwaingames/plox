@@ -1,7 +1,16 @@
 from typing import Any
 
-from .expressions import Expr, Assign, Binary, Grouping, Literal, Unary, Variable
-from .statements import Stmt, Block, Expression, Print, Var
+from .expressions import (
+    Expr,
+    Assign,
+    Binary,
+    Grouping,
+    Literal,
+    Logical,
+    Unary,
+    Variable,
+)
+from .statements import Stmt, Block, Expression, If, Print, Var
 from scanner.token import Token
 
 
@@ -12,6 +21,17 @@ class ASTPrinter:
                 return self._parenthesize2("block", *statement._statements)
             case Expression():
                 return self._parenthesize(";", statement._expression)
+            case If():
+                if statement._else_branch:
+                    return self._parenthesize2(
+                        "if-else",
+                        statement._condition,
+                        statement._then_branch,
+                        statement._else_branch,
+                    )
+                return self._parenthesize2(
+                    "if", statement._condition, statement._then_branch
+                )
             case Print():
                 return self._parenthesize("print", statement._expression)
             case Var():
@@ -43,6 +63,10 @@ class ASTPrinter:
                         return str(expression._value).lower()
                     case _:
                         return str(expression._value)
+            case Logical():
+                return self._parenthesize(
+                    expression._operator.lexeme, expression._left, expression._right
+                )
             case Unary():
                 return self._parenthesize(
                     expression._operator.lexeme, expression._right
@@ -58,35 +82,7 @@ class ASTPrinter:
         output = f"({name}"
         for expression in args:
             output += " "
-            match expression:
-                case Assign():
-                    output += self._parenthesize2(
-                        "=", expression._name.lexeme, expression._value
-                    )
-                case Binary():
-                    output += self._parenthesize(
-                        expression._operator.lexeme, expression._left, expression._right
-                    )
-                case Grouping():
-                    output += self._parenthesize("group", expression._expression)
-                case Literal():
-                    match expression._value:
-                        case None:
-                            output += "nil"
-                        case bool():
-                            output += str(expression._value).lower()
-                        case _:
-                            output += str(expression._value)
-                case Unary():
-                    output += self._parenthesize(
-                        expression._operator.lexeme, expression._right
-                    )
-                case Variable():
-                    output += expression._name.lexeme
-                case _:
-                    raise NotImplementedError(
-                        f"Not added a case for a certain expression : {expression}"
-                    )
+            output += self.print_expr(expression)
         output += ")"
         return output
 
@@ -100,39 +96,10 @@ class ASTPrinter:
         for part in parts:
             output += " "
             match part:
-                case Assign():
-                    output += self._parenthesize2("=", part._name.lexeme, part._value)
-                case Binary():
-                    output += self._parenthesize(
-                        part._operator.lexeme, part._left, part._right
-                    )
-                case Grouping():
-                    output += self._parenthesize("group", part._expression)
-                case Literal():
-                    match part._value:
-                        case None:
-                            output += "nil"
-                        case bool():
-                            output += str(part._value).lower()
-                        case _:
-                            output += str(part._value)
-                case Unary():
-                    output += self._parenthesize(part._operator.lexeme, part._right)
-                case Variable():
-                    output += part._name.lexeme
-                case Block():
-                    output += self._parenthesize2("block", *part._statements)
-                case Expression():
-                    output += self._parenthesize(";", part._expression)
-                case Print():
-                    output += self._parenthesize("print", part._expression)
-                case Var():
-                    if part._initializer is None:
-                        output += self._parenthesize2("var", part._name)
-                    else:
-                        output += self._parenthesize2(
-                            "var", part._name, "=", part._initializer
-                        )
+                case Expr():
+                    output += self.print_expr(part)
+                case Stmt():
+                    output += self.print_stmt(part)
                 case Token():
                     output += part.lexeme
                 case tuple():
