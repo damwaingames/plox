@@ -32,7 +32,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
     - [x] Logical Inverse (`!Expr`)
   - [x] Variable (`IDENTIFIER`)
 - Statements implemented
-  - [ ] Block (`{Stmt}`)
+  - [x] Block (`{Stmt}`)
   - [ ] Class (`class IDENTIFIER {Stmt}`)
   - [x] Expression (`Expr;`)
   - [ ] Function (`fun IDENTIFIER {Stmt}`)
@@ -41,6 +41,9 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [ ] Return (`return Expr;`)
   - [x] Var (`var IDENTIFIER;`)
   - [ ] While (`while (Expr) {Stmt}`)
+- Scopes implemented
+    [x] Global
+    [x] Block
 
 
 ## Usage
