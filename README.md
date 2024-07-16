@@ -21,9 +21,9 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [ ] Get (`IDENTIFIER.IDENTIFIER`)
   - [x] Groupings (`(Expr)`)
   - [x] Literals (`NUMBER`, `STRING`, `IDENTIFIER`, `true`, `false`, `"nil"`)
-  - [ ] Logical
-    - [ ] And (`Expr and Expr`)
-    - [ ] Or (`Expr or Expr`)
+  - [x] Logical
+    - [x] And (`Expr and Expr`)
+    - [x] Or (`Expr or Expr`)
   - [ ] Set (`Expr = Expr`)
   - [ ] Super (`super.IDENTIFIER`)
   - [ ] This (`this.IDENTIFIER`)
@@ -36,7 +36,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [ ] Class (`class IDENTIFIER {Stmt}`)
   - [x] Expression (`Expr;`)
   - [ ] Function (`fun IDENTIFIER {Stmt}`)
-  - [ ] If (`if (Expr) {Stmt} else {Stmt}`)
+  - [x] If (`if (Expr) {Stmt} else {Stmt}`)
   - [x] Print (`print Expr;`)
   - [ ] Return (`return Expr;`)
   - [x] Var (`var IDENTIFIER;`)

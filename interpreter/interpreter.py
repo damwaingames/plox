@@ -7,11 +7,13 @@ from abstract_syntax_tree import (
     Binary,
     Grouping,
     Literal,
+    Logical,
     Unary,
     Variable,
     Stmt,
     Block,
     Expression,
+    If,
     Print,
     Var,
 )
@@ -40,6 +42,12 @@ class Interpreter:
                 return None
             case Expression():
                 self._evaluate(statement._expression)
+                return None
+            case If():
+                if self._is_truthy(self._evaluate(statement._condition)):
+                    self._execute(statement._then_branch)
+                elif statement._else_branch:
+                    self._execute(statement._else_branch)
                 return None
             case Print():
                 value = self._evaluate(statement._expression)
@@ -111,6 +119,15 @@ class Interpreter:
                 return self._evaluate(expression._expression)
             case Literal():
                 return expression._value
+            case Logical():
+                left = self._evaluate(expression._left)
+                if expression._operator == TokenType.OR:
+                    if self._is_truthy(left):
+                        return left
+                else:
+                    if not self._is_truthy(left):
+                        return left
+                return self._evaluate(expression._right)
             case Unary():
                 right = self._evaluate(expression._right)
                 match expression._operator.type:

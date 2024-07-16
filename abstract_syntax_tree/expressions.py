@@ -21,12 +21,6 @@ class Binary(Expr):
         self._operator = operator
 
 
-class Unary(Expr):
-    def __init__(self, operator: Token, right: Expr) -> None:
-        self._operator = operator
-        self._right = right
-
-
 class Grouping(Expr):
     def __init__(self, expression: Expr) -> None:
         self._expression = expression
@@ -35,6 +29,19 @@ class Grouping(Expr):
 class Literal(Expr):
     def __init__(self, value: Any) -> None:
         self._value = value
+
+
+class Logical(Expr):
+    def __init__(self, left: Expr, operator: Token, right: Expr) -> None:
+        self._left = left
+        self._right = right
+        self._operator = operator
+
+
+class Unary(Expr):
+    def __init__(self, operator: Token, right: Expr) -> None:
+        self._operator = operator
+        self._right = right
 
 
 class Variable(Expr):

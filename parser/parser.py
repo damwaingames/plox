@@ -6,11 +6,13 @@ from abstract_syntax_tree import (
     Binary,
     Grouping,
     Literal,
+    Logical,
     Unary,
     Variable,
     Stmt,
     Block,
     Expression,
+    If,
     Print,
     Var,
 )
@@ -144,8 +146,24 @@ class Parser:
             expression = Binary(expression, operator, right)
         return expression
 
-    def _assignment(self) -> Expr:
+    def _and(self) -> Expr:
         expression = self._equality()
+        while self._match(TokenType.AND):
+            operator = self._previous()
+            right = self._equality()
+            expression = Logical(expression, operator, right)
+        return expression
+
+    def _or(self) -> Expr:
+        expression = self._and()
+        while self._match(TokenType.OR):
+            operator = self._previous()
+            right = self._and()
+            expression = Logical(expression, operator, right)
+        return expression
+
+    def _assignment(self) -> Expr:
+        expression = self._or()
         if self._match(TokenType.EQUAL):
             equals = self._previous()
             value = self._assignment()
@@ -184,7 +202,17 @@ class Parser:
         self._consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return statements
 
+    def _if_statement(self) -> Stmt:
+        self._consume(TokenType.LEFT_PAREN, "Expect '(' after if .")
+        condition = self._expression()
+        self._consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.")
+        then_branch = self._statement()
+        else_branch = self._statement() if self._match(TokenType.ELSE) else None
+        return If(condition, then_branch, else_branch)
+
     def _statement(self) -> Stmt:
+        if self._match(TokenType.IF):
+            return self._if_statement()
         if self._match(TokenType.PRINT):
             return self._print_statment()
         if self._match(TokenType.LEFT_BRACE):

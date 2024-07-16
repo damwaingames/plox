@@ -19,6 +19,15 @@ class Expression(Stmt):
         self._expression = expression
 
 
+class If(Stmt):
+    def __init__(
+        self, condition: Expr, then_branch: Stmt, else_branch: Stmt | None = None
+    ) -> None:
+        self._condition = condition
+        self._then_branch = then_branch
+        self._else_branch = else_branch
+
+
 class Print(Stmt):
     def __init__(self, expression: Expr) -> None:
         self._expression = expression
