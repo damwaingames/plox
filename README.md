@@ -42,8 +42,8 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [x] Var (`var IDENTIFIER;`)
   - [ ] While (`while (Expr) {Stmt}`)
 - Scopes implemented
-    [x] Global
-    [x] Block
+  - [x] Global
+  - [x] Block
 
 
 ## Usage
