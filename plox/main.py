@@ -52,7 +52,7 @@ def parse(
     if ErrorHandler.had_error:
         exit(65)
     for statement in statements:
-        print(ASTPrinter().print_stmt(statement))
+        print(ASTPrinter().print(statement))
 
 
 @app.command()

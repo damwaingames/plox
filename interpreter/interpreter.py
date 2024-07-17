@@ -16,6 +16,7 @@ from abstract_syntax_tree import (
     If,
     Print,
     Var,
+    While,
 )
 from environment import Environment
 from errors import ErrorHandler, LoxRuntimeError
@@ -24,7 +25,7 @@ from scanner.token import Token, TokenType
 
 class Interpreter:
     def __init__(self) -> None:
-        self._environment = Environment()
+        self._environment = Environment(None)
 
     def interpret(self, statements: list[Stmt]) -> None:
         try:
@@ -33,31 +34,31 @@ class Interpreter:
         except LoxRuntimeError as e:
             ErrorHandler.runtime_error(e)
 
-    def _execute(self, statement: Stmt) -> Any:
+    def _execute(self, statement: Stmt) -> None:
         match statement:
             case Block():
                 self._execute_block(
                     statement._statements, Environment(self._environment)
                 )
-                return None
             case Expression():
                 self._evaluate(statement._expression)
-                return None
             case If():
                 if self._is_truthy(self._evaluate(statement._condition)):
                     self._execute(statement._then_branch)
                 elif statement._else_branch:
                     self._execute(statement._else_branch)
-                return None
             case Print():
-                value = self._evaluate(statement._expression)
-                print(self._stringify(value))
-                return None
+                val = self._evaluate(statement._expression)
+                print(self._stringify(val))
             case Var():
                 if statement._initializer is not None:
                     value = self._evaluate(statement._initializer)
+                else:
+                    value = self._evaluate(Literal(None))
                 self._environment.define(statement._name.lexeme, value)
-                return None
+            case While():
+                while self._is_truthy(self._evaluate(statement._condition)):
+                    self._execute(statement._body)
 
     def _execute_block(self, statements: list[Stmt], environment: Environment) -> None:
         previous = self._environment

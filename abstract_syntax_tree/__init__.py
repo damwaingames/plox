@@ -9,7 +9,7 @@ from .expressions import (
     Variable,
 )
 from .printer import ASTPrinter
-from .statements import Stmt, Block, Expression, If, Print, Var
+from .statements import Stmt, Block, Expression, If, Print, Var, While
 
 __all__ = [
     "ASTPrinter",
@@ -27,4 +27,6 @@ __all__ = [
     "If",
     "Print",
     "Var",
+    "While",
+    "Visitor",
 ]
