@@ -14,6 +14,7 @@ from abstract_syntax_tree.expressions import (
 )
 from abstract_syntax_tree.statements import (
     Function,
+    Return,
     Stmt,
     Block,
     Expression,
@@ -23,7 +24,7 @@ from abstract_syntax_tree.statements import (
     While,
 )
 from environment import Environment
-from errors import ErrorHandler, LoxRuntimeError
+from errors import ErrorHandler, LoxRuntimeError, LoxReturn
 from lox_builtins import ClockFunction, LoxCallable, LoxFunction
 from scanner.token import Token, TokenType
 
@@ -75,6 +76,13 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
     def visit_print_stmt(self, stmt: Print) -> None:
         val = self._evaluate(stmt._expression)
         print(self._stringify(val))
+
+    def visit_return_stmt(self, stmt: Return) -> None:
+        if stmt._value is not None:
+            value = self._evaluate(stmt._value)
+        else:
+            value = self._evaluate(Literal(None))
+        raise LoxReturn(value)
 
     def visit_var_stmt(self, stmt: Var) -> None:
         if stmt._initializer is not None:

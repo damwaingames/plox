@@ -38,13 +38,15 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [x] Function (`fun IDENTIFIER {Stmt}`)
   - [x] If (`if (Expr) {Stmt} else {Stmt}`)
   - [x] Print (`print Expr;`)
-  - [ ] Return (`return Expr;`)
+  - [x] Return (`return Expr;`)
   - [x] Var (`var IDENTIFIER;`)
   - [x] While (`while (Expr) {Stmt}`)
     - [x] For (`for (INITIALIZER;CONDITION;INCREMENT) {Stmt}`) (Syntactic sugar around a while loop)
 - Scopes implemented
   - [x] Global
   - [x] Block
+  - [ ] Local
+  - [ ] Closure
 
 
 ## Usage

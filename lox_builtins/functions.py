@@ -4,6 +4,7 @@ from typing import Any, TYPE_CHECKING
 
 from abstract_syntax_tree.statements import Function
 from environment import Environment
+from errors import LoxReturn
 
 if TYPE_CHECKING:
     from interpreter import Interpreter
@@ -30,7 +31,10 @@ class LoxFunction(LoxCallable):
         environment = Environment(interpreter.globals)
         for i, param in enumerate(self._declaration._params):
             environment.define(param.lexeme, arguments[i])
-        interpreter._execute_block(self._declaration._body, environment)
+        try:
+            interpreter._execute_block(self._declaration._body, environment)
+        except LoxReturn as rtn_val:
+            return rtn_val.args[0]
         return None
 
     def __repr__(self) -> str:

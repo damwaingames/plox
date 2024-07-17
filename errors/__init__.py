@@ -1,4 +1,4 @@
 from .error_handler import ErrorHandler
-from .errors import LoxParseError, LoxRuntimeError
+from .errors import LoxParseError, LoxRuntimeError, LoxReturn
 
-__all__ = ["ErrorHandler", "LoxParseError", "LoxRuntimeError"]
+__all__ = ["ErrorHandler", "LoxParseError", "LoxRuntimeError", "LoxReturn"]

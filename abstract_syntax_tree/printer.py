@@ -1,7 +1,7 @@
 from typing import Any
 
 from abstract_syntax_tree.expressions import Call
-from abstract_syntax_tree.statements import Function
+from abstract_syntax_tree.statements import Function, Return
 
 from .expressions import (
     Expr,
@@ -44,19 +44,30 @@ class ASTPrinter(Expr.Visitor[str], Stmt.Visitor[str]):
         return builder
 
     def visit_if_stmt(self, stmt: If) -> str:
-        if stmt._else_branch is None:
-            return self._parenthesize2("if", stmt._condition, stmt._then_branch)
-        return self._parenthesize2(
-            "if-else", stmt._condition, stmt._then_branch, stmt._else_branch
+        return (
+            self._parenthesize2("if", stmt._condition, stmt._then_branch)
+            if stmt._else_branch is None
+            else self._parenthesize2(
+                "if-else", stmt._condition, stmt._then_branch, stmt._else_branch
+            )
         )
 
     def visit_print_stmt(self, stmt: Print) -> str:
         return self._parenthesize("print", stmt._expression)
 
+    def visit_return_stmt(self, stmt: Return) -> str:
+        return (
+            "(return)"
+            if stmt._value is None
+            else self._parenthesize("return", stmt._value)
+        )
+
     def visit_var_stmt(self, stmt: Var) -> str:
-        if stmt._initializer is None:
-            return self._parenthesize2("var", stmt._name)
-        return self._parenthesize2("var", stmt._name, "=", stmt._initializer)
+        return (
+            self._parenthesize2("var", stmt._name)
+            if stmt._initializer is None
+            else self._parenthesize2("var", stmt._name, "=", stmt._initializer)
+        )
 
     def visit_while_stmt(self, stmt: While) -> str:
         return self._parenthesize2("while", stmt._condition, stmt._body)

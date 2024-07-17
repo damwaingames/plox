@@ -18,6 +18,7 @@ from abstract_syntax_tree.statements import (
     Function,
     If,
     Print,
+    Return,
     Var,
     While,
 )
@@ -204,6 +205,14 @@ class Parser:
     def _expression(self) -> Expr:
         return self._assignment()
 
+    def _return_statement(self) -> Stmt:
+        keyword = self._previous()
+        value = None
+        if not self._check(TokenType.SEMICOLON):
+            value = self._expression()
+        self._consume(TokenType.SEMICOLON, "Expect ';' after return value.")
+        return Return(keyword, value)
+
     def _print_statment(self) -> Stmt:
         value = self._expression()
         self._consume(TokenType.SEMICOLON, "Expect ';' after value.")
@@ -303,6 +312,8 @@ class Parser:
             return self._if_statement()
         if self._match(TokenType.PRINT):
             return self._print_statment()
+        if self._match(TokenType.RETURN):
+            return self._return_statement()
         if self._match(TokenType.WHILE):
             return self._while_statement()
         if self._match(TokenType.LEFT_BRACE):

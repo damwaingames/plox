@@ -31,6 +31,10 @@ class Stmt(ABC):
             raise NotImplementedError()
 
         @abstractmethod
+        def visit_return_stmt(self, stmt: "Return") -> R:
+            raise NotImplementedError()
+
+        @abstractmethod
         def visit_var_stmt(self, stmt: "Var") -> R:
             raise NotImplementedError()
 
@@ -87,6 +91,15 @@ class Print(Stmt):
 
     def accept(self, visitor: Stmt.Visitor[R]) -> R:
         return visitor.visit_print_stmt(self)
+
+
+class Return(Stmt):
+    def __init__(self, keyword: Token, value: Expr | None) -> None:
+        self._keyword = keyword
+        self._value = value
+
+    def accept(self, visitor: Stmt.Visitor[R]) -> R:
+        return visitor.visit_return_stmt(self)
 
 
 class Var(Stmt):
