@@ -18,13 +18,13 @@ This is a python implemenation of the lox langauge as described in the book [Cra
       - [x] Less (`Expr < Expr`)
       - [x] Less or Equal (`Expr <= Expr`)
   - [x] Call (`Expr()`)
-  - [ ] Get (`IDENTIFIER.IDENTIFIER`)
+  - [x] Get (`IDENTIFIER.IDENTIFIER`)
   - [x] Groupings (`(Expr)`)
   - [x] Literals (`NUMBER`, `STRING`, `IDENTIFIER`, `true`, `false`, `"nil"`)
   - [x] Logical
     - [x] And (`Expr and Expr`)
     - [x] Or (`Expr or Expr`)
-  - [ ] Set (`Expr = Expr`)
+  - [x] Set (`Expr = Expr`)
   - [ ] Super (`super.IDENTIFIER`)
   - [ ] This (`this.IDENTIFIER`)
   - [x] Unary
@@ -33,7 +33,7 @@ This is a python implemenation of the lox langauge as described in the book [Cra
   - [x] Variable (`IDENTIFIER`)
 - Statements implemented
   - [x] Block (`{Stmt}`)
-  - [ ] Class (`class IDENTIFIER {Stmt}`)
+  - [x] Class (`class IDENTIFIER {Stmt}`)
   - [x] Expression (`Expr;`)
   - [x] Function (`fun IDENTIFIER {Stmt}`)
   - [x] If (`if (Expr) {Stmt} else {Stmt}`)

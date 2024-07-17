@@ -6,14 +6,17 @@ from abstract_syntax_tree.expressions import (
     Binary,
     Call,
     Expr,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
 from abstract_syntax_tree.statements import (
     Block,
+    Class,
     Expression,
     Function,
     If,
@@ -32,6 +35,7 @@ class Resolver(Expr.Visitor[None], Stmt.Visitor[None]):
     class FunctionType(Enum):
         NONE = auto()
         FUNCTION = auto()
+        METHOD = auto()
 
     def __init__(self, interpreter: Interpreter) -> None:
         self._interpreter = interpreter
@@ -87,6 +91,13 @@ class Resolver(Expr.Visitor[None], Stmt.Visitor[None]):
         self.resolve_statements(stmt._statements)
         self._end_scope()
 
+    def visit_class_stmt(self, stmt: Class) -> None:
+        self._declare(stmt._name)
+        self._define(stmt._name)
+        for method in stmt._methods:
+            declaration = Resolver.FunctionType.METHOD
+            self._resolve_function(method, declaration)
+
     def visit_function_stmt(self, stmt: Function) -> None:
         self._declare(stmt._name)
         self._define(stmt._name)
@@ -133,6 +144,9 @@ class Resolver(Expr.Visitor[None], Stmt.Visitor[None]):
         for argument in expr._arguments:
             self.resolve(argument)
 
+    def visit_get_expr(self, expr: Get) -> None:
+        self.resolve(expr._object)
+
     def visit_grouping_expr(self, expr: Grouping) -> None:
         self.resolve(expr._expression)
 
@@ -142,6 +156,10 @@ class Resolver(Expr.Visitor[None], Stmt.Visitor[None]):
     def visit_logical_expr(self, expr: Logical) -> None:
         self.resolve(expr._left)
         self.resolve(expr._right)
+
+    def visit_set_expr(self, expr: Set) -> None:
+        self.resolve(expr._value)
+        self.resolve(expr._object)
 
     def visit_unary_expr(self, expr: Unary) -> None:
         self.resolve(expr._right)

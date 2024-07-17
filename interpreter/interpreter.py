@@ -6,13 +6,16 @@ from abstract_syntax_tree.expressions import (
     Assign,
     Binary,
     Call,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
 from abstract_syntax_tree.statements import (
+    Class,
     Function,
     Return,
     Stmt,
@@ -25,7 +28,7 @@ from abstract_syntax_tree.statements import (
 )
 from environment import Environment
 from errors import ErrorHandler, LoxRuntimeError, LoxReturn
-from lox_builtins import ClockFunction, LoxCallable, LoxFunction
+from lox_builtins import ClockFunction, LoxCallable, LoxFunction, LoxClass, LoxInstance
 from scanner.token import Token, TokenType
 
 
@@ -63,6 +66,15 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
 
     def visit_block_stmt(self, stmt: Block) -> None:
         self.execute_block(stmt._statements, Environment(self._environment))
+
+    def visit_class_stmt(self, stmt: Class) -> None:
+        self._environment.define(stmt._name.lexeme, None)
+        methods: dict[str, LoxFunction] = {}
+        for method in stmt._methods:
+            function = LoxFunction(method, self._environment)
+            methods.update({method._name.lexeme: function})
+        klass = LoxClass(stmt._name.lexeme, methods)
+        self._environment.assign(stmt._name, klass)
 
     def visit_expression_stmt(self, stmt: Expression) -> None:
         self._evaluate(stmt._expression)
@@ -165,6 +177,11 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
             )
         return function.call(self, arguments)
 
+    def visit_get_expr(self, expr: Get) -> Any:
+        obj = self._evaluate(expr._object)
+        if isinstance(obj, LoxInstance):
+            return obj.get(expr._name)
+
     def visit_grouping_expr(self, expr: Grouping) -> Any:
         return self._evaluate(expr._expression)
 
@@ -180,6 +197,14 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
             if not self._is_truthy(left):
                 return left
         return self._evaluate(expr._right)
+
+    def visit_set_expr(self, expr: Set) -> Any:
+        obj = self._evaluate(expr._object)
+        if not isinstance(obj, LoxInstance):
+            raise LoxRuntimeError(expr._name, "Only instances have fields.")
+        value = self._evaluate(expr._value)
+        obj.set(expr._name, value)
+        return value
 
     def visit_unary_expr(self, expr: Unary) -> Any:
         right = self._evaluate(expr._right)

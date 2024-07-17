@@ -5,15 +5,18 @@ from abstract_syntax_tree.expressions import (
     Assign,
     Binary,
     Call,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
 from abstract_syntax_tree.statements import (
     Stmt,
     Block,
+    Class,
     Expression,
     Function,
     If,
@@ -127,6 +130,11 @@ class Parser:
         while True:
             if self._match(TokenType.LEFT_PAREN):
                 expression = self._finish_call(expression)
+            elif self._match(TokenType.DOT):
+                name = self._consume(
+                    TokenType.IDENTIFIER, "Expect property name after '.'."
+                )
+                expression = Get(expression, name)
             else:
                 break
         return expression
@@ -199,6 +207,9 @@ class Parser:
             if isinstance(expression, Variable):
                 name = expression._name
                 return Assign(name, value)
+            elif isinstance(expression, Get):
+                get = expression
+                return Set(get._object, get._name, value)
             ErrorHandler.error(equals, "Invalid assignment target.")
         return expression
 
@@ -320,8 +331,19 @@ class Parser:
             return Block(self._block())
         return self._expression_statement()
 
+    def _class_declaration(self) -> Stmt:
+        name = self._consume(TokenType.IDENTIFIER, "Expect class name.")
+        self._consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+        methods: list[Function] = []
+        while not self._check(TokenType.RIGHT_BRACE) and not self._is_at_end():
+            methods.append(self._function("method"))
+        self._consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+        return Class(name, methods)
+
     def _declaration(self) -> Stmt | None:
         try:
+            if self._match(TokenType.CLASS):
+                return self._class_declaration()
             if self._match(TokenType.FUN):
                 return self._function("function")
             if self._match(TokenType.VAR):

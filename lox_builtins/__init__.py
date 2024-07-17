@@ -1,3 +1,3 @@
-from .functions import ClockFunction, LoxCallable, LoxFunction
+from .functions import ClockFunction, LoxCallable, LoxFunction, LoxClass, LoxInstance
 
-__all__ = ["LoxCallable", "ClockFunction", "LoxFunction"]
+__all__ = ["LoxCallable", "ClockFunction", "LoxFunction", "LoxClass", "LoxInstance"]

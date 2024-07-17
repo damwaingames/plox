@@ -1,19 +1,30 @@
 from typing import Any
 
-from abstract_syntax_tree.expressions import Call
-from abstract_syntax_tree.statements import Function, Return
-
 from .expressions import (
     Expr,
     Assign,
     Binary,
+    Call,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
-from .statements import Stmt, Block, Expression, If, Print, Var, While
+from .statements import (
+    Stmt,
+    Block,
+    Class,
+    Expression,
+    Function,
+    If,
+    Print,
+    Return,
+    Var,
+    While,
+)
 from scanner.token import Token
 
 
@@ -25,6 +36,13 @@ class ASTPrinter(Expr.Visitor[str], Stmt.Visitor[str]):
         builder = "(block "
         for statement in stmt._statements:
             builder += statement.accept(self)
+        builder += ")"
+        return builder
+
+    def visit_class_stmt(self, stmt: Class) -> str:
+        builder = f"(class {stmt._name.lexeme}"
+        for method in stmt._methods:
+            builder += f" {self.print(method)}"
         builder += ")"
         return builder
 
@@ -84,11 +102,17 @@ class ASTPrinter(Expr.Visitor[str], Stmt.Visitor[str]):
     def visit_grouping_expr(self, expr: Grouping) -> str:
         return self._parenthesize("group", expr._expression)
 
+    def visit_get_expr(self, expr: Get) -> str:
+        return self._parenthesize2(".", expr._object, expr._name.lexeme)
+
     def visit_literal_expr(self, expr: Literal) -> str:
         return "nil" if expr._value is None else str(expr._value)
 
     def visit_logical_expr(self, expr: Logical) -> str:
         return self._parenthesize(expr._operator.lexeme, expr._left, expr._right)
+
+    def visit_set_expr(self, expr: Set) -> str:
+        return self._parenthesize2("=", expr._object, expr._name.lexeme, expr._value)
 
     def visit_unary_expr(self, expr: Unary) -> str:
         return self._parenthesize(expr._operator.lexeme, expr._right)

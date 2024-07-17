@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from time import time
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Union
 
 from abstract_syntax_tree.statements import Function
 from environment import Environment
-from errors import LoxReturn
+from errors import LoxReturn, LoxRuntimeError
+from scanner.token import Token
 
 if TYPE_CHECKING:
     from interpreter import Interpreter
@@ -18,6 +19,47 @@ class LoxCallable(ABC):
     @abstractmethod
     def call(self, interpreter: "Interpreter", arguments: list[Any]) -> Any:
         raise NotImplementedError()
+
+
+class LoxClass(LoxCallable):
+    def __init__(self, name: str, methods: dict[str, "LoxFunction"]) -> None:
+        self.name = name
+        self._methods = methods
+
+    def call(self, interpreter: "Interpreter", arguments: list[Any]) -> Any:
+        instance = LoxInstance(self)
+        return instance
+
+    def arity(self) -> int:
+        return 0
+
+    def find_method(self, name: str) -> Union["LoxFunction", None]:
+        if name in self._methods.keys():
+            return self._methods.get(name)
+        return None
+
+    def __repr__(self) -> str:
+        return self.name
+
+
+class LoxInstance:
+    def __init__(self, klass: LoxClass) -> None:
+        self._klass = klass
+        self._fields: dict[str, Any] = {}
+
+    def get(self, name: Token) -> Any:
+        if name.lexeme in self._fields.keys():
+            return self._fields.get(name.lexeme)
+        method = self._klass.find_method(name.lexeme)
+        if method:
+            return method
+        raise LoxRuntimeError(name, f"Undefined property '{name.lexeme}'.")
+
+    def set(self, name: Token, value: Any) -> None:
+        self._fields.update({name.lexeme: value})
+
+    def __repr__(self) -> str:
+        return f"{self._klass.name} instance"
 
 
 class LoxFunction(LoxCallable):
