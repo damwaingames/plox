@@ -21,18 +21,19 @@ class LoxCallable(ABC):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Function) -> None:
+    def __init__(self, declaration: Function, closure: Environment) -> None:
         self._declaration = declaration
+        self._closure = closure
 
     def arity(self) -> int:
         return len(self._declaration._params)
 
     def call(self, interpreter: "Interpreter", arguments: list[Any]) -> Any:
-        environment = Environment(interpreter.globals)
+        environment = Environment(self._closure)
         for i, param in enumerate(self._declaration._params):
             environment.define(param.lexeme, arguments[i])
         try:
-            interpreter._execute_block(self._declaration._body, environment)
+            interpreter.execute_block(self._declaration._body, environment)
         except LoxReturn as rtn_val:
             return rtn_val.args[0]
         return None

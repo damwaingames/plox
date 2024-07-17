@@ -8,6 +8,7 @@ from abstract_syntax_tree import ASTPrinter
 from errors import ErrorHandler
 from interpreter import Interpreter
 from parser import Parser
+from resolver import Resolver
 from scanner import Scanner
 
 
@@ -92,6 +93,10 @@ def run(source: str, interpreter: Interpreter) -> None:
     tokens = scanner.scan_tokens()
     parser = Parser(tokens)
     statements = parser.parse()
+    if ErrorHandler.had_error:
+        return
+    resolver = Resolver(interpreter)
+    resolver.resolve_statements(statements)
     if ErrorHandler.had_error:
         return
     interpreter.interpret(statements)

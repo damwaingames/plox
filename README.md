@@ -44,9 +44,9 @@ This is a python implemenation of the lox langauge as described in the book [Cra
     - [x] For (`for (INITIALIZER;CONDITION;INCREMENT) {Stmt}`) (Syntactic sugar around a while loop)
 - Scopes implemented
   - [x] Global
-  - [x] Block
-  - [ ] Local
-  - [ ] Closure
+  - [x] Dynamic
+  - [x] Local
+  - [x] Closure
 
 
 ## Usage

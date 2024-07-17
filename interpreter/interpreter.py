@@ -33,6 +33,7 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
     def __init__(self) -> None:
         self.globals = Environment(None)
         self._environment = self.globals
+        self._locals: dict[Expr, int] = {}
         self.globals.define("clock", ClockFunction)
 
     def interpret(self, statements: list[Stmt]) -> None:
@@ -45,10 +46,13 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
     def _execute(self, statement: Stmt) -> None:
         statement.accept(self)
 
+    def resolve(self, expr: Expr, depth: int):
+        self._locals.update({expr: depth})
+
     def _evaluate(self, expression: Expr) -> Any:
         return expression.accept(self)
 
-    def _execute_block(self, statements: list[Stmt], environment: Environment) -> None:
+    def execute_block(self, statements: list[Stmt], environment: Environment) -> None:
         previous = self._environment
         try:
             self._environment = environment
@@ -58,13 +62,13 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
             self._environment = previous
 
     def visit_block_stmt(self, stmt: Block) -> None:
-        self._execute_block(stmt._statements, Environment(self._environment))
+        self.execute_block(stmt._statements, Environment(self._environment))
 
     def visit_expression_stmt(self, stmt: Expression) -> None:
         self._evaluate(stmt._expression)
 
     def visit_function_stmt(self, stmt: Function) -> None:
-        function = LoxFunction(stmt)
+        function = LoxFunction(stmt, self._environment)
         self._environment.define(stmt._name.lexeme, function)
 
     def visit_if_stmt(self, stmt: If) -> None:
@@ -97,7 +101,11 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
 
     def visit_assign_expr(self, expr: Assign) -> Any:
         value = self._evaluate(expr._value)
-        self._environment.assign(expr._name, value)
+        distance = self._locals.get(expr)
+        if distance:
+            self._environment.assign_at(distance, expr._name, value)
+        else:
+            self.globals.assign(expr._name, value)
         return value
 
     def visit_binary_expr(self, expr: Binary) -> Any:
@@ -184,6 +192,12 @@ class Interpreter(Expr.Visitor[Any], Stmt.Visitor[None]):
 
     def visit_variable_expr(self, expr: Variable) -> Any:
         return self._environment.get(expr._name)
+
+    def _lookup_variable(self, name: Token, expr: Expr) -> Any:
+        distance = self._locals.get(expr)
+        if distance:
+            return self._environment.get_at(distance, name.lexeme)
+        return self.globals.get(name)
 
     def _is_truthy(self, object: Any) -> bool:
         if object is None:
