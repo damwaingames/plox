@@ -19,6 +19,10 @@ class Stmt(ABC):
             raise NotImplementedError()
 
         @abstractmethod
+        def visit_function_stmt(self, stmt: "Function") -> R:
+            raise NotImplementedError()
+
+        @abstractmethod
         def visit_if_stmt(self, stmt: "If") -> R:
             raise NotImplementedError()
 
@@ -53,6 +57,16 @@ class Expression(Stmt):
 
     def accept(self, visitor: Stmt.Visitor[R]) -> R:
         return visitor.visit_expression_stmt(self)
+
+
+class Function(Stmt):
+    def __init__(self, name: Token, params: list[Token], body: list[Stmt]) -> None:
+        self._name = name
+        self._params = params
+        self._body = body
+
+    def accept(self, visitor: Stmt.Visitor[R]) -> R:
+        return visitor.visit_function_stmt(self)
 
 
 class If(Stmt):

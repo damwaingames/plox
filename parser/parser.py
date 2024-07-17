@@ -1,17 +1,21 @@
 from errors import ErrorHandler, LoxParseError
 from scanner.token import Token, TokenType
-from abstract_syntax_tree import (
+from abstract_syntax_tree.expressions import (
     Expr,
     Assign,
     Binary,
+    Call,
     Grouping,
     Literal,
     Logical,
     Unary,
     Variable,
+)
+from abstract_syntax_tree.statements import (
     Stmt,
     Block,
     Expression,
+    Function,
     If,
     Print,
     Var,
@@ -103,15 +107,38 @@ class Parser:
             return Grouping(expression)
         raise self._error(self._peek(), "Expect expression.")
 
+    def _finish_call(self, callee: Expr) -> Expr:
+        arguments: list[Expr] = []
+        if not self._check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= 255:
+                    ErrorHandler.error(
+                        self._peek(), "Can't have more than 255 arguments."
+                    )
+                arguments.append(self._expression())
+                if not self._match(TokenType.COMMA):
+                    break
+        paren = self._consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+        return Call(callee, paren, arguments)
+
+    def _call(self) -> Expr:
+        expression = self._primary()
+        while True:
+            if self._match(TokenType.LEFT_PAREN):
+                expression = self._finish_call(expression)
+            else:
+                break
+        return expression
+
     def _unary(self) -> Expr:
         if self._match(TokenType.BANG, TokenType.MINUS):
             operator = self._previous()
             right = self._unary()
             return Unary(operator, right)
-        return self._primary()
+        return self._call()
 
     def _factor(self) -> Expr:
-        expression: Expr = self._unary()
+        expression = self._unary()
         while self._match(TokenType.SLASH, TokenType.STAR):
             operator = self._previous()
             right = self._unary()
@@ -119,7 +146,7 @@ class Parser:
         return expression
 
     def _term(self) -> Expr:
-        expression: Expr = self._factor()
+        expression = self._factor()
         while self._match(TokenType.PLUS, TokenType.MINUS):
             operator = self._previous()
             right = self._factor()
@@ -127,7 +154,7 @@ class Parser:
         return expression
 
     def _comparison(self) -> Expr:
-        expression: Expr = self._term()
+        expression = self._term()
         while self._match(
             TokenType.GREATER,
             TokenType.GREATER_EQUAL,
@@ -140,7 +167,7 @@ class Parser:
         return expression
 
     def _equality(self) -> Expr:
-        expression: Expr = self._comparison()
+        expression = self._comparison()
         while self._match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL):
             operator = self._previous()
             right = self._comparison()
@@ -197,6 +224,26 @@ class Parser:
         self._consume(TokenType.RIGHT_PAREN, "Expect ')' after 'while' condition.")
         body = self._statement()
         return While(condition, body)
+
+    def _function(self, kind: str) -> Function:
+        name = self._consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+        self._consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters: list[Token] = []
+        if not self._check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(parameters) >= 255:
+                    ErrorHandler.error(
+                        self._peek(), "Can't have more than 255 parameters."
+                    )
+                parameters.append(
+                    self._consume(TokenType.IDENTIFIER, "Expect parameter name.")
+                )
+                if not self._match(TokenType.COMMA):
+                    break
+        self._consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        self._consume(TokenType.LEFT_BRACE, f"Expect '{{' before {kind} body.")
+        body = self._block()
+        return Function(name, parameters, body)
 
     def _expression_statement(self) -> Stmt:
         expression = self._expression()
@@ -264,6 +311,8 @@ class Parser:
 
     def _declaration(self) -> Stmt | None:
         try:
+            if self._match(TokenType.FUN):
+                return self._function("function")
             if self._match(TokenType.VAR):
                 return self._var_declaration()
             return self._statement()

@@ -17,6 +17,10 @@ class Expr(ABC):
             raise NotImplementedError()
 
         @abstractmethod
+        def visit_call_expr(self, expr: "Call") -> R:
+            raise NotImplementedError()
+
+        @abstractmethod
         def visit_grouping_expr(self, expr: "Grouping") -> R:
             raise NotImplementedError()
 
@@ -58,6 +62,16 @@ class Binary(Expr):
 
     def accept(self, visitor: Expr.Visitor[R]) -> R:
         return visitor.visit_binary_expr(self)
+
+
+class Call(Expr):
+    def __init__(self, callee: Expr, paren: Token, arguments: list[Expr]) -> None:
+        self._callee = callee
+        self._paren = paren
+        self._arguments = arguments
+
+    def accept(self, visitor: Expr.Visitor[R]) -> R:
+        return visitor.visit_call_expr(self)
 
 
 class Grouping(Expr):
